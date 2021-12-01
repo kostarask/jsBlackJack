@@ -1,0 +1,96 @@
+body {
+    margin: 0;
+    padding: unset;
+    font-family: "Roboto";
+
+    background: url(images/casinoFelt.jpg) no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    display: grid;
+    height: 100vh;
+    grid-template-columns: minmax(auto, 500px);
+    justify-content: center;
+    align-content: center;
+}
+
+h1 {
+    color: goldenrod;
+    padding-top: unset;
+    margin-top: unset;
+    font-size: 8vmin;
+    text-align: center;
+    margin-bottom: 0;
+}
+
+h2 {
+    color: White;
+    font-style: italic;
+    text-decoration-line: underline;
+    padding-top: unset;
+    margin-top: unset;
+    margin-bottom: unset;
+    text-align: center;
+}
+
+h3 {
+    color: White;
+    margin: 0;
+}
+
+.container {
+    background-size: cover;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    width: max-content;
+    height: max-content;
+
+    border-radius: 10px;
+}
+
+p {
+    color: whitesmoke;
+    font-size: 4vmin;
+    padding: 2px 5px;
+    margin-top: 0.7rem;
+    margin-bottom: 0.7rem;
+}
+#question {
+    text-align: center;
+    font-style: italic;
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-evenly;
+    width: 300px;
+}
+
+.main-btn {
+    background-color: goldenrod;
+    color: #116f33;
+    border-radius: 5px;
+    border: none;
+    padding: 5px 15px;
+    font-style: bold;
+    font-size: 4vmin;
+    font-family: "Trebuchet MS";
+    cursor: pointer;
+}
+
+.main-btn:hover {
+    background-color: rgb(170, 122, 2);
+}
+
+.main-btn:disabled {
+    background-color: gray;
+    cursor: initial;
+}
+
+#btn,
+#start-new-game-btn {
+    width: 100%;
+}

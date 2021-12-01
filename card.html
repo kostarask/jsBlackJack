@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="index.css" />
+        <link rel="stylesheet" href="card.css" />
+        <script src="card.js" defer></script>
+        <title>Document</title>
+    </head>
+    <body>
+        <div class="container">
+            <h1>BlackJack Game</h1>
+
+            <h2 class="dealer-h2">Dealer</h2>
+            <div class="dealer-div">
+                <div class="card-container dealer-card-container">
+                    <p id="dealer">Cards:</p>
+                    <div class="dealer-cards"></div>
+                </div>
+                <p class="dealer-score" id="dealer">Score: <span id="dealer-score">-</span></p>
+            </div>
+
+            <h2 class="player-h2">Player</h2>
+            <div class="player-credit-and-bet">
+                <h3 class="player-credit">Credit: 0$</h3>
+                <h3 class="player-bet">Bet: 0$</h3>
+            </div>
+
+            <div class="no-split">
+                <div class="player-div">
+                    <div class="card-container player-card-container">
+                        <p id="player">Cards:</p>
+                        <div class="player-cards"></div>
+                    </div>
+                    <p class="player-score" id="player">Score: <span id="player-score">-</span></p>
+                </div>
+            </div>
+
+            <div class="betting-el">
+                <p id="message-el">Wanna play?</p>
+            </div>
+            <div class="buttons">
+                <button class="main-btn" id="btn" onclick="initializeGame()">Start Game</button>
+                <button
+                    class="main-btn"
+                    id="start-new-game-btn"
+                    onclick="startGame()"
+                    hidden="true"
+                >
+                    Start New Game
+                </button>
+                <button class="main-btn" id="make-bet-btn" onclick="makeBet()" hidden="true">
+                    Make Bet
+                </button>
+                <button class="main-btn" id="undo-bet-btn" onclick="undoBet()" hidden="true">
+                    Undo Bet
+                </button>
+                <button class="main-btn" id="reset-bet-btn" onclick="resetBet()" hidden="true">
+                    Reset Bet
+                </button>
+                <button class="main-btn" id="draw" onclick="draw()" hidden="true">Draw</button>
+                <button class="main-btn" id="stop" onclick="endGame()" hidden="true">Hold</button>
+                <button class="main-btn" id="double" onclick="double()" hidden="true">
+                    Double
+                </button>
+                <button class="main-btn" id="split" onclick="split()" hidden="true">Split</button>
+            </div>
+        </div>
+    </body>
+</html>
