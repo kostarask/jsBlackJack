@@ -35,32 +35,32 @@
     margin-top: auto;
 }
 .hearts {
-    background-image: url("images/hearts.PNG");
+    background-image: url("../images/hearts.PNG");
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
 }
 .diamonds {
-    background-image: url("images/diamonds.PNG");
+    background-image: url("../images/diamonds.PNG");
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
 }
 .clubs {
-    background-image: url("images/clubs.PNG");
+    background-image: url("../images/clubs.PNG");
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
 }
 .spades {
-    background-image: url("images/spades.PNG");
+    background-image: url("../images/spades.PNG");
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
 }
 
 .closed {
-    background-image: url("images/backOfDeck.PNG");
+    background-image: url("../images/backOfDeck.PNG");
     background-size: cover;
     background-repeat: round;
     border: 2px solid black;
@@ -122,9 +122,9 @@
 
 .dealer-div,
 .player-div {
-    border: 6px solid rgb(104, 0, 0);
+    border: 6px solid rgba(105, 0, 0, 0.795);
     border-radius: 20px;
-    background-image: url("images/felt.jpg");
+    background-image: url("../images/felt.jpg");
     margin-top: 10px;
     margin-bottom: 10px;
     display: flex;
@@ -162,27 +162,37 @@
 }
 
 .active {
-    border-color: red;
+    border-color: rgba(105, 0, 0, 0.795);
 }
 .inactive {
     border-color: grey;
 }
 
 .game-over-div {
-    background-image: url("images/casinoFeltInner.jpg");
+    background-image: url("../images/casinoFelt.jpg");
     background-size: cover;
     position: fixed;
-    top: 29%;
+    top: 50%;
     left: 50%;
     -webkit-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%);
     width: 30rem;
-    height: 10rem;
+    height: 15rem;
     border-radius: 20px;
     border: 8px solid goldenrod;
     display: none;
+    justify-content: space-evenly;
+    align-content: center;
+    flex-direction: column;
+    box-shadow: 0px 1px 18px 15px goldenrod;
 }
 
 .congrats-head {
-    margin: 30px;
+    color: goldenrod;
+    text-decoration-line: none;
+}
+
+.winnings-head {
+    color: goldenrod;
+    text-decoration-line: none;
 }

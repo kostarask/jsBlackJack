@@ -3,7 +3,7 @@ body {
     padding: 0;
     font-family: "Roboto";
 
-    background: url(images/casinoFelt.jpg) no-repeat center center fixed;
+    background: url(../images/casinoFelt.jpg) no-repeat center center fixed;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     -o-background-size: cover;
