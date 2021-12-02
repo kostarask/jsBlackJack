@@ -160,3 +160,10 @@
 .split .value {
     font-size: 2vmin;
 }
+
+.active {
+    border-color: red;
+}
+.inactive {
+    border-color: grey;
+}

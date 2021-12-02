@@ -12,12 +12,15 @@ let realCardValue;
 let closedCard;
 let newCard;
 let player;
+let splitPlayer;
 let dealer;
 
 let totalBet = 0;
 let lastBet = 0;
 
 let splitExists = false;
+let splitPlayerIsActive = false;
+let mainPlayerIsActive = true;
 
 /*============================
     button elements
@@ -245,33 +248,33 @@ function removeChipElements() {
     4.Bet related functions
 ===================================================*/
 function bet(chipValue) {
-    totalBet += chipValue;
+    player.TotalBet += chipValue;
     lastBet = chipValue;
     player.Credit -= chipValue;
-    messageEl.textContent = "Bet: " + totalBet + "$";
+    messageEl.textContent = "Bet: " + player.TotalBet + "$";
     checkChips();
     checkBet();
 }
 
 function undoBet() {
-    totalBet -= lastBet;
+    player.TotalBet -= lastBet;
     player.Credit += lastBet;
-    messageEl.textContent = "Bet: " + totalBet + "$";
+    messageEl.textContent = "Bet: " + player.TotalBet + "$";
     checkChips();
     checkBet();
 }
 
 function resetBet() {
-    player.Credit += totalBet;
+    player.Credit += player.TotalBet;
 
-    totalBet = 0;
-    messageEl.textContent = "Bet: " + totalBet + "$";
+    player.TotalBet = 0;
+    messageEl.textContent = "Bet: " + player.TotalBet + "$";
     checkChips();
     checkBet();
 }
 
 function checkBet() {
-    if (!totalBet > 0) {
+    if (!player.TotalBet > 0) {
         makeBetBtn.disabled = true;
     } else {
         makeBetBtn.disabled = false;
@@ -323,22 +326,23 @@ function dealerDraw() {
 function createPlayers(numOfPlayers) {
     for (let i = 1; i <= numOfPlayers; i++) {
         let hand = new Array();
-        let splitHand = new Array();
+        // let splitHand = new Array();
         let player = {
             Name: "Player " + i,
             PlayerId: i,
             Hand: hand,
-            SplitHand: splitHand,
-            SplitScore: 0,
             Score: 0,
-            Credit: 20000,
+            Credit: 100,
             NumOfAces: 0,
+            TotalBet: 0,
         };
         playersArray.push(player);
     }
 }
 
 function resetPlayersHandAndScore() {
+    splitExists = false;
+
     dealer.Score = 0;
     dealer.Hand.length = 0;
     dealer.InitialScore = 0;
@@ -346,25 +350,32 @@ function resetPlayersHandAndScore() {
     player.Score = 0;
     player.Hand.length = 0;
     player.NumOfAces = 0;
+    player.TotalBet = 0;
 
-    player.SplitScore = 0;
-    player.SplitHand.length = 0;
+    if (typeof splitPlayer != "undefined") {
+        splitPlayer.Score = 0;
+        splitPlayer.Hand.length = 0;
+        splitPlayer.NumOfAces = 0;
+        splitPlayer.TotalBet = 0;
+
+        activateMainPlayer();
+    }
 }
 
 function createPlayerInitialCards() {
     player.NumOfAces = 0;
     for (let i = 0; i < 2; i++) {
-        // let eight = { Value: "A", Suit: "spades" };
-        // let eight2 = { Value: "A", Suit: "hearts" };
-        // let eight3 = { Value: "A", Suit: "clubs" };
+        let eight = { Value: "2", Suit: "spades" };
+        let eight2 = { Value: "A", Suit: "hearts" };
+        let eight3 = { Value: "2", Suit: "clubs" };
         newCard = getCard(deck);
-        // if (i === 0) {
-        //     newCard = eight;
-        // } else if (i === 1) {
-        //     newCard = eight2;
-        // } else {
-        //     newCard = eight3;
-        // }
+        if (i === 0) {
+            newCard = eight;
+            // } else if (i === 1) {
+            //     newCard = eight2;
+        } else {
+            newCard = eight3;
+        }
         realCardValue = getRealCardValue(newCard.Value, player.Score);
         player.Hand.push(newCard);
         if (newCard.Value === "A") {
@@ -398,28 +409,49 @@ function draw() {
     player.Score += realCardValue;
     correctMiddleAces(player);
 
+    playerScoreEl.textContent = player.Score;
+
+    if (player.Score >= 21 && splitExists) {
+        holdSplit();
+        return;
+    }
     if (player.Score >= 21) {
         endGame();
     }
-    playerScoreEl.textContent = player.Score;
 }
 
-function double() {
+function callDouble() {
+    if (mainPlayerIsActive) {
+        double(player, ".player-card-container", playerScoreEl);
+        return;
+    }
+    if (splitPlayerIsActive) {
+        double(splitPlayer, ".player-card-container-split", playerSplitScoreEl); //TODO: correct
+        return;
+    }
+}
+
+function double(playerObj, container, scoreEl) {
     newCard = getCard(deck);
-    realCardValue = getRealCardValue(newCard.Value, player.Score);
-    player.Hand.push(newCard);
+    realCardValue = getRealCardValue(newCard.Value, playerObj.Score);
+    playerObj.Hand.push(newCard);
 
-    renderCard(newCard, ".player-card-container");
-    player.Score += realCardValue;
-    correctMiddleAces(player.Score);
-    player.Credit -= totalBet;
-    totalBet = 2 * totalBet;
+    renderCard(newCard, container);
+    playerObj.Score += realCardValue;
+    correctMiddleAces(playerObj.Score);
+    playerObj.Credit -= playerObj.TotalBet;
+    playerObj.TotalBet = 2 * playerObj.TotalBet;
 
-    playerCreditEl.textContent = "Credit: " + player.Credit + "$";
-    playerBetEl.textContent = "Bet: " + player.Credit + "$";
+    playerCreditEl.textContent = "Credit: " + (player.Credit + splitPlayer.Credit) + "$";
+    playerBetEl.textContent = "Bet: " + (player.TotalBet + splitPlayer.TotalBet) + "$";
+    scoreEl.textContent = playerObj.Score;
+
+    if (splitExists && mainPlayerIsActive) {
+        holdSplit();
+        return;
+    }
 
     endGame();
-    playerScoreEl.textContent = player.Score;
 }
 
 function createSplitDiv() {
@@ -455,20 +487,26 @@ function createSplitDiv() {
     playerDiv.appendChild(playerScorePar);
 
     document.querySelector(".split").appendChild(playerDiv);
+    playerSplitScoreEl = document.querySelector("#player-score2");
 }
 
 function drawSplit() {
     splitBtn.hidden = true;
-    doubleBtn.disabled = true;
+    doubleBtn.disabled = true; //TODO enable when appropriate
+
     newCard = getCard(deck);
-    realCardValue = getRealCardValue(newCard.Value, player.SplitScore);
-    player.SplitHand.push(newCard);
-
     renderCard(newCard, ".player-card-container-split");
-    player.SplitScore += realCardValue;
-    player.SplitScore = correctMiddleAces(player.SplitScore);
 
-    if (player.SplitScore >= 21) {
+    realCardValue = getRealCardValue(newCard.Value, player.SplitScore);
+
+    splitPlayer.Hand.push(newCard);
+
+    splitPlayer.Score += realCardValue;
+    correctMiddleAces(splitPlayer);
+
+    playerSplitScoreEl.textContent = splitPlayer.Score;
+
+    if (splitPlayer.Score >= 21) {
         endGame();
     }
 }
@@ -480,30 +518,91 @@ function initializeSplitGame() {
     newCard = player.Hand.pop();
     player.Score = getRealCardValue(player.Hand[0].Value, player.Score);
 
-    realCardValue = getRealCardValue(newCard.Value, player.SplitScore);
-    player.SplitHand.push(newCard);
+    realCardValue = getRealCardValue(newCard.Value, splitPlayer.Score);
+    splitPlayer.Hand.push(newCard);
 
     renderCard(newCard, ".player-card-container-split");
-    player.SplitScore += realCardValue;
-    player.SplitScore = correctMiddleAces(player.SplitScore);
+    splitPlayer.Score += realCardValue;
+    correctMiddleAces(splitPlayer);
 
     draw();
 
     drawSplit();
-    playerSplitScoreEl = document.querySelector("#player-score2");
-    playerSplitScoreEl.textContent = player.SplitScore;
+
+    activateMainPlayer();
+
+    if (player.Credit > player.TotalBet) {
+        doubleBtn.disabled = false;
+    }
+    playerSplitScoreEl.textContent = splitPlayer.Score;
 
     playerCreditEl.textContent = "Credit: " + player.Credit + "$";
+
+    stopBtn.onclick = function () {
+        holdSplit();
+    };
+}
+
+function holdSplit() {
+    activateSplitPlayer();
+
+    drawBtn.onclick = function () {
+        drawSplit();
+    };
+
+    stopBtn.onclick = function () {
+        endGame();
+    };
+
+    if (player.Credit > player.TotalBet) {
+        doubleBtn.disabled = false;
+    }
 }
 
 //TODO complete split implementation
 function split() {
     splitExists = true;
+    let splitHand = new Array();
+    splitPlayer = {
+        Name: "SplitPlayer 1",
+        PlayerId: 2,
+        Hand: splitHand,
+        Score: 0,
+        Credit: 0,
+        NumOfAces: 0,
+        TotalBet: 0,
+    };
+    splitPlayer.TotalBet = player.TotalBet;
+    player.Credit -= splitPlayer.TotalBet;
+
+    playerCreditEl.textContent = "Credit: " + player.Credit + "$";
+    playerBetEl.textContent = "Bet: " + (player.TotalBet + splitPlayer.TotalBet) + "$";
+
     createSplitDiv();
     initializeSplitGame();
-    // drawBtn.onclick = function () {
-    //     drawSplit();
-    // };
+}
+
+function activateSplitPlayer() {
+    splitPlayerIsActive = true;
+    mainPlayerIsActive = false;
+
+    document.querySelector(".player-div").classList.remove("active");
+    document.querySelector(".player-div").classList.add("inactive");
+
+    document.querySelector(".player-split-div").classList.remove("inactive");
+    document.querySelector(".player-split-div").classList.add("active");
+}
+
+function activateMainPlayer() {
+    mainPlayerIsActive = true;
+    splitPlayerIsActive = false;
+
+    document.querySelector(".player-div").classList.remove("inactive");
+    document.querySelector(".player-div").classList.add("active");
+    if (splitExists) {
+        document.querySelector(".player-split-div").classList.remove("active");
+        document.querySelector(".player-split-div").classList.add("inactive");
+    }
 }
 
 function endGame() {
@@ -514,27 +613,44 @@ function endGame() {
     doubleBtn.hidden = true;
     revealClosedCard();
 
+    if (splitExists) {
+        splitEndGame();
+        return;
+    }
+
     if (player.Score <= 21) {
         while (dealer.Score < 17) {
             dealerDraw();
         }
     }
     dealerScoreEl.textContent = dealer.Score;
-    resolvePoints();
+    resolvePoints(player);
+}
+
+function splitEndGame() {
+    if (player.Score <= 21 || splitPlayer.Score <= 21) {
+        while (dealer.Score < 17) {
+            dealerDraw();
+        }
+    }
+    dealerScoreEl.textContent = dealer.Score;
+    resolvePoints(player);
+    resolvePoints(splitPlayer);
+    player.Credit += splitPlayer.Credit;
 }
 
 /*===================================================
     8.Game resolving related functions
 =================================================== */
 
-function checkForBlackjack() {
-    if (player.Score === 21 && player.Hand.length === 2) {
+function checkForBlackjack(playerObj) {
+    if (playerObj.Score === 21 && playerObj.Hand.length === 2) {
         if (dealer.Score != 21 || dealer.Hand.length > 2) {
             messageEl.textContent = "Winner Winner Chicken Dinner!";
             dealerH2.style.color = "red";
             dealerScoreEl.style.color = "red";
-            playerH2.style.color = "goldenrod";
-            playerScoreEl.style.color = "goldenrod";
+            playerObjH2.style.color = "goldenrod";
+            playerObjScoreEl.style.color = "goldenrod";
             return true;
         }
     }
@@ -547,12 +663,12 @@ function checkForBlackjack() {
     }
 }
 
-function resolvePoints() {
-    if (checkForBlackjack()) {
-        player.Credit += 2.5 * totalBet;
+function resolvePoints(playerObj) {
+    if (checkForBlackjack(playerObj)) {
+        playerObj.Credit += 2.5 * playerObj.TotalBet;
         return;
     }
-    if (player.Score > 21) {
+    if (playerObj.Score > 21) {
         messageEl.textContent = "Player busts";
         playerH2.style.color = "red";
         playerScoreEl.style.color = "red";
@@ -572,12 +688,12 @@ function resolvePoints() {
         playerScoreEl.style.color = "goldenrod";
         playerBetEl.style.color = "goldenrod";
 
-        player.Credit += 2 * totalBet;
+        playerObj.Credit += 2 * playerObj.TotalBet;
 
         return;
     }
 
-    if (dealer.Score > player.Score) {
+    if (dealer.Score > playerObj.Score) {
         messageEl.textContent = "Dealer wins";
         dealerH2.style.color = "goldenrod";
         dealerScoreEl.style.color = "goldenrod";
@@ -586,19 +702,19 @@ function resolvePoints() {
         playerBetEl.style.color = "red";
     }
 
-    if (dealer.Score < player.Score) {
+    if (dealer.Score < playerObj.Score) {
         messageEl.textContent = "Player Wins";
         dealerH2.style.color = "red";
         dealerScoreEl.style.color = "red";
         playerH2.style.color = "goldenrod";
         playerScoreEl.style.color = "goldenrod";
         playerBetEl.style.color = "goldenrod";
-        player.Credit += 2 * totalBet;
+        player.Credit += 2 * playerObj.TotalBet;
     }
 
-    if (dealer.Score === player.Score) {
+    if (dealer.Score === playerObj.Score) {
         messageEl.textContent = "Game is a Draw";
-        player.Credit += totalBet;
+        player.Credit += playerObj.TotalBet;
     }
 }
 
@@ -634,17 +750,17 @@ function playGame() {
     drawBtn.hidden = false;
     stopBtn.hidden = false;
     doubleBtn.hidden = false;
-    if (totalBet > player.Credit) {
+    if (player.TotalBet > player.Credit) {
         doubleBtn.disabled = true;
     }
     splitBtn.hidden = false;
     splitBtn.disabled = true;
 
-    if (totalBet < player.Credit && player.Hand[0].Value === player.Hand[1].Value) {
+    if (player.TotalBet < player.Credit && player.Hand[0].Value === player.Hand[1].Value) {
         splitBtn.disabled = false;
     }
 
-    messageEl.textContent = "Draw or Hold?";
+    messageEl.textContent = "Pick a move";
     messageEl.style.color = "whitesmoke";
     playerScoreEl.textContent = player.Score;
     dealerScoreEl.textContent = dealer.InitialScore;
@@ -657,7 +773,7 @@ function makeBet() {
     undoBetBtn.hidden = true;
     resetBetBtn.hidden = true;
 
-    playerBetEl.textContent = "Bet: " + totalBet + "$";
+    playerBetEl.textContent = "Bet: " + player.TotalBet + "$";
 
     messageEl.style.textAlign = "center";
     messageEl.style.width = "100%";
