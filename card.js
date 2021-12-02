@@ -150,17 +150,8 @@ function getRealCardValue(cardValue, sum) {
         case "K":
             realCardValue = 10;
             break;
-        // case "a":
-        //     realCardValue = 1;
-        //     break;
         case "A":
-            // if (sum + 11 > 21) {
-            //     realCardValue = 1;
-            // } else {
-            //     realCardValue = 11;
-            // }
             realCardValue = 11;
-
             break;
     }
     return realCardValue;
@@ -187,8 +178,6 @@ function renderCard(cardObj, container) {
     document.querySelector(container).appendChild(card);
 }
 
-// TODO:Correct with loop label and break
-// Player object with numOfAces so that actual card value doesn't change
 function correctMiddleAces(playerObj) {
     if (playerObj.NumOfAces > 0) {
         while (playerObj.Score > 21) {
@@ -199,19 +188,6 @@ function correctMiddleAces(playerObj) {
 }
 
 function deleteCards() {
-    // let element = document.querySelector(
-    //     "body > div > div > div.card-container.dealer-card-container "
-    // );
-    // while (element.lastChild.id !== "dealer") {
-    //     element.removeChild(element.lastChild);
-    // }
-    // element = document.querySelector(
-    //     "body > div > div > div.card-container.player-card-container "
-    // );
-    // while (element.lastChild.id !== "player") {
-    //     element.removeChild(element.lastChild);
-    // }
-
     let cards = document.getElementsByClassName("card");
     while (cards.length > 0) {
         cards[0].parentElement.removeChild(cards[0]);
@@ -378,9 +354,9 @@ function resetPlayersHandAndScore() {
 function createPlayerInitialCards() {
     player.NumOfAces = 0;
     for (let i = 0; i < 2; i++) {
-        let eight = { Value: "A", Suit: "spades" };
-        let eight2 = { Value: "A", Suit: "hearts" };
-        let eight3 = { Value: "A", Suit: "clubs" };
+        // let eight = { Value: "A", Suit: "spades" };
+        // let eight2 = { Value: "A", Suit: "hearts" };
+        // let eight3 = { Value: "A", Suit: "clubs" };
         newCard = getCard(deck);
         // if (i === 0) {
         //     newCard = eight;
@@ -742,9 +718,3 @@ function initializeGame() {
 
     startGame();
 }
-
-// window.addEventListener("load", function () {
-//     getDeck();
-//     shuffle();
-//     createPlayers(1);
-// });
