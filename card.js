@@ -51,8 +51,6 @@ let playerScoreEl = document.getElementById("player-score");
 
 // Split related DOM elements
 let playerSplitScoreEl;
-// console.log(playerSplitScoreEl);
-
 /*=================================================
     Functions Table of Contents
         1.Deck related functions
@@ -152,9 +150,9 @@ function getRealCardValue(cardValue, sum) {
         case "K":
             realCardValue = 10;
             break;
-        case "a":
-            realCardValue = 1;
-            break;
+        // case "a":
+        //     realCardValue = 1;
+        //     break;
         case "A":
             // if (sum + 11 > 21) {
             //     realCardValue = 1;
@@ -191,20 +189,13 @@ function renderCard(cardObj, container) {
 
 // TODO:Correct with loop label and break
 // Player object with numOfAces so that actual card value doesn't change
-function correctMiddleAces(score) {
-    let numberOfAces = 0;
-
-    if (score > 21) {
-        for (let i = 0; i < player.Hand.length; i++) {
-            if (player.Hand[i].Value === "A") {
-                numberOfAces++;
-                player.Hand[i].Value = "a";
-                break;
-            }
+function correctMiddleAces(playerObj) {
+    if (playerObj.NumOfAces > 0) {
+        while (playerObj.Score > 21) {
+            playerObj.Score -= 10;
+            playerObj.NumOfAces--;
         }
-        score = score - numberOfAces * 10;
     }
-    return score;
 }
 
 function deleteCards() {
@@ -346,7 +337,7 @@ function dealerDraw() {
     dealer.Hand.push(newCard);
     dealer.Score = dealer.Score + realCardValue;
     renderCard(newCard, ".dealer-card-container");
-    correctMiddleAces(dealer.Score);
+    correctMiddleAces(dealer);
 }
 
 /*===================================================
@@ -364,7 +355,8 @@ function createPlayers(numOfPlayers) {
             SplitHand: splitHand,
             SplitScore: 0,
             Score: 0,
-            Credit: 20,
+            Credit: 20000,
+            NumOfAces: 0,
         };
         playersArray.push(player);
     }
@@ -376,27 +368,36 @@ function resetPlayersHandAndScore() {
     dealer.InitialScore = 0;
 
     player.Score = 0;
-    player.SplitScore = 0;
     player.Hand.length = 0;
+    player.NumOfAces = 0;
+
+    player.SplitScore = 0;
     player.SplitHand.length = 0;
 }
 
 function createPlayerInitialCards() {
+    player.NumOfAces = 0;
     for (let i = 0; i < 2; i++) {
         let eight = { Value: "A", Suit: "spades" };
         let eight2 = { Value: "A", Suit: "hearts" };
+        let eight3 = { Value: "A", Suit: "clubs" };
         newCard = getCard(deck);
-        if (i === 0) {
-            newCard = eight;
-        } else {
-            newCard = eight2;
-        }
+        // if (i === 0) {
+        //     newCard = eight;
+        // } else if (i === 1) {
+        //     newCard = eight2;
+        // } else {
+        //     newCard = eight3;
+        // }
         realCardValue = getRealCardValue(newCard.Value, player.Score);
         player.Hand.push(newCard);
+        if (newCard.Value === "A") {
+            player.NumOfAces++;
+        }
 
         renderCard(newCard, ".player-card-container");
         player.Score += realCardValue;
-        player.Score = correctMiddleAces(player.Score);
+        correctMiddleAces(player);
 
         playerH2.textContent = player.Name;
         playerCreditEl.textContent = "Credit: " + player.Credit + "$";
@@ -413,10 +414,13 @@ function draw() {
     newCard = getCard(deck);
     realCardValue = getRealCardValue(newCard.Value, player.Score);
     player.Hand.push(newCard);
+    if (newCard.Value === "A") {
+        player.NumOfAces++;
+    }
 
     renderCard(newCard, ".player-card-container");
     player.Score += realCardValue;
-    player.Score = correctMiddleAces(player.Score);
+    correctMiddleAces(player);
 
     if (player.Score >= 21) {
         endGame();
@@ -431,7 +435,7 @@ function double() {
 
     renderCard(newCard, ".player-card-container");
     player.Score += realCardValue;
-    player.Score = correctMiddleAces(player.Score);
+    correctMiddleAces(player.Score);
     player.Credit -= totalBet;
     totalBet = 2 * totalBet;
 
@@ -513,8 +517,6 @@ function initializeSplitGame() {
     playerSplitScoreEl = document.querySelector("#player-score2");
     playerSplitScoreEl.textContent = player.SplitScore;
 
-    console.log(player.Score, player.SplitScore);
-
     playerCreditEl.textContent = "Credit: " + player.Credit + "$";
 }
 
@@ -570,7 +572,6 @@ function checkForBlackjack() {
 }
 
 function resolvePoints() {
-    console.log(totalBet);
     if (checkForBlackjack()) {
         player.Credit += 2.5 * totalBet;
         return;
@@ -663,7 +664,6 @@ function playGame() {
     splitBtn.hidden = false;
     splitBtn.disabled = true;
 
-    console.log(player.Hand[0].Value, player.Hand[1].Value);
     if (totalBet < player.Credit && player.Hand[0].Value === player.Hand[1].Value) {
         splitBtn.disabled = false;
     }
@@ -736,6 +736,7 @@ function initializeGame() {
     getDeck();
     shuffle();
     createDealer();
+
     createPlayers(1);
     player = playersArray[0];
 
