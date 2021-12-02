@@ -167,3 +167,22 @@
 .inactive {
     border-color: grey;
 }
+
+.game-over-div {
+    background-image: url("images/casinoFeltInner.jpg");
+    background-size: cover;
+    position: fixed;
+    top: 29%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    width: 30rem;
+    height: 10rem;
+    border-radius: 20px;
+    border: 8px solid goldenrod;
+    display: none;
+}
+
+.congrats-head {
+    margin: 30px;
+}

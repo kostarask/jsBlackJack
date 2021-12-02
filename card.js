@@ -17,6 +17,9 @@ let dealer;
 
 let totalBet = 0;
 let lastBet = 0;
+let condition;
+// let winnings = { Winnings: 0, Condition: condition };
+let winningsArray = new Array();
 
 let splitExists = false;
 let splitPlayerIsActive = false;
@@ -54,6 +57,11 @@ let playerScoreEl = document.getElementById("player-score");
 
 // Split related DOM elements
 let playerSplitScoreEl;
+
+// Game Over related DOM elements
+let gameOverEl = document.querySelector(".game-over-div");
+let winningsEl = document.querySelector(".winnings-head");
+
 /*=================================================
     Functions Table of Contents
         1.Deck related functions
@@ -360,14 +368,16 @@ function resetPlayersHandAndScore() {
 
         activateMainPlayer();
     }
+
+    gameOverEl.style.display = "none";
 }
 
 function createPlayerInitialCards() {
     player.NumOfAces = 0;
     for (let i = 0; i < 2; i++) {
-        let eight = { Value: "2", Suit: "spades" };
+        let eight = { Value: "10", Suit: "spades" };
         let eight2 = { Value: "A", Suit: "hearts" };
-        let eight3 = { Value: "2", Suit: "clubs" };
+        let eight3 = { Value: "10", Suit: "clubs" };
         newCard = getCard(deck);
         if (i === 0) {
             newCard = eight;
@@ -417,6 +427,7 @@ function draw() {
     }
     if (player.Score >= 21) {
         endGame();
+        return;
     }
 }
 
@@ -492,8 +503,7 @@ function createSplitDiv() {
 
 function drawSplit() {
     splitBtn.hidden = true;
-    doubleBtn.disabled = true; //TODO enable when appropriate
-
+    doubleBtn.disabled = true;
     newCard = getCard(deck);
     renderCard(newCard, ".player-card-container-split");
 
@@ -505,10 +515,6 @@ function drawSplit() {
     correctMiddleAces(splitPlayer);
 
     playerSplitScoreEl.textContent = splitPlayer.Score;
-
-    if (splitPlayer.Score >= 21) {
-        endGame();
-    }
 }
 
 function initializeSplitGame() {
@@ -546,6 +552,11 @@ function initializeSplitGame() {
 function holdSplit() {
     activateSplitPlayer();
 
+    if (splitPlayer.Score >= 21) {
+        endGame();
+        return;
+    }
+
     drawBtn.onclick = function () {
         drawSplit();
     };
@@ -559,7 +570,6 @@ function holdSplit() {
     }
 }
 
-//TODO complete split implementation
 function split() {
     splitExists = true;
     let splitHand = new Array();
@@ -625,6 +635,10 @@ function endGame() {
     }
     dealerScoreEl.textContent = dealer.Score;
     resolvePoints(player);
+    console.table(winningsArray);
+    console.log(player.Credit);
+    player.Credit += getWinnings();
+    console.log(player.Credit);
 }
 
 function splitEndGame() {
@@ -636,7 +650,8 @@ function splitEndGame() {
     dealerScoreEl.textContent = dealer.Score;
     resolvePoints(player);
     resolvePoints(splitPlayer);
-    player.Credit += splitPlayer.Credit;
+    console.table(winningsArray);
+    player.Credit += getWinnings();
 }
 
 /*===================================================
@@ -649,15 +664,23 @@ function checkForBlackjack(playerObj) {
             messageEl.textContent = "Winner Winner Chicken Dinner!";
             dealerH2.style.color = "red";
             dealerScoreEl.style.color = "red";
-            playerObjH2.style.color = "goldenrod";
-            playerObjScoreEl.style.color = "goldenrod";
+            playerH2.style.color = "goldenrod";
+            playerScoreEl.style.color = "goldenrod";
             return true;
         }
     }
 
-    if (player.Score === 21 && player.Hand.lenth === 2) {
+    if (playerObj.Score === 21 && playerObj.Hand.lenth === 2) {
         if (dealer.Score === 21 || dealer.Hand.length === 2) {
             messageEl.textContent = "Game is a Draw";
+
+            let winnings = {
+                Winnings: playerObj.TotalBet,
+                Condition: playerObj.Name + " BlackJack Draw",
+            };
+
+            winningsArray.push(winnings);
+
             return true;
         }
     }
@@ -665,41 +688,78 @@ function checkForBlackjack(playerObj) {
 
 function resolvePoints(playerObj) {
     if (checkForBlackjack(playerObj)) {
-        playerObj.Credit += 2.5 * playerObj.TotalBet;
+        // playerObj.Credit += 2.5 * playerObj.TotalBet;
+        // gameOverEl.style.display = "block";
+        // winnings = 3.5 * playerObj.TotalBet;
+        // winningsEl.textContent = winnings + "$";
+
+        let winnings = {
+            Winnings: 3.5 * playerObj.TotalBet,
+            Condition: playerObj.Name + " BlackJack",
+        };
+
+        winningsArray.push(winnings);
         return;
     }
     if (playerObj.Score > 21) {
-        messageEl.textContent = "Player busts";
-        playerH2.style.color = "red";
-        playerScoreEl.style.color = "red";
-        dealerH2.style.color = "goldenrod";
-        playerBetEl.style.color = "red";
+        // messageEl.textContent = "Player busts";
+        // playerH2.style.color = "red";
+        // playerScoreEl.style.color = "red";
+        // dealerH2.style.color = "goldenrod";
+        // playerBetEl.style.color = "red";
 
-        dealerScoreEl.style.color = "goldenrod";
+        // dealerScoreEl.style.color = "goldenrod";
+
+        // gameOverEl.style.display = "block";
+
+        let winnings = {
+            Winnings: 0,
+            Condition: playerObj.Name + " Player over 21",
+        };
+
+        winningsArray.push(winnings);
 
         return;
     }
 
     if (dealer.Score > 21) {
-        messageEl.textContent = "Dealer Busts";
-        dealerH2.style.color = "red";
-        dealerScoreEl.style.color = "red";
-        playerH2.style.color = "goldenrod";
-        playerScoreEl.style.color = "goldenrod";
-        playerBetEl.style.color = "goldenrod";
+        // messageEl.textContent = "Dealer Busts";
+        // dealerH2.style.color = "red";
+        // dealerScoreEl.style.color = "red";
+        // playerH2.style.color = "goldenrod";
+        // playerScoreEl.style.color = "goldenrod";
+        // playerBetEl.style.color = "goldenrod";
 
-        playerObj.Credit += 2 * playerObj.TotalBet;
+        // playerObj.Credit += 2 * playerObj.TotalBet;
+        // gameOverEl.style.display = "block";
+        // winnings = 3 * playerObj.TotalBet;
+        // winningsEl.textContent = winnings + "$";
+
+        let winnings = {
+            Winnings: 3 * playerObj.TotalBet,
+            Condition: playerObj.Name + " Dealer over 21",
+        };
+
+        winningsArray.push(winnings);
 
         return;
     }
 
     if (dealer.Score > playerObj.Score) {
-        messageEl.textContent = "Dealer wins";
-        dealerH2.style.color = "goldenrod";
-        dealerScoreEl.style.color = "goldenrod";
-        playerH2.style.color = "red";
-        playerScoreEl.style.color = "red";
-        playerBetEl.style.color = "red";
+        // messageEl.textContent = "Dealer wins";
+        // dealerH2.style.color = "goldenrod";
+        // dealerScoreEl.style.color = "goldenrod";
+        // playerH2.style.color = "red";
+        // playerScoreEl.style.color = "red";
+        // playerBetEl.style.color = "red";
+        // gameOverEl.style.display = "block";
+
+        let winnings = {
+            Winnings: 0,
+            Condition: playerObj.Name + " Dealer won",
+        };
+
+        winningsArray.push(winnings);
     }
 
     if (dealer.Score < playerObj.Score) {
@@ -709,13 +769,43 @@ function resolvePoints(playerObj) {
         playerH2.style.color = "goldenrod";
         playerScoreEl.style.color = "goldenrod";
         playerBetEl.style.color = "goldenrod";
-        player.Credit += 2 * playerObj.TotalBet;
+        // playerObj.Credit += 2 * playerObj.TotalBet;
+        // gameOverEl.style.display = "block";
+        // winnings = 3 * playerObj.TotalBet;
+        // winningsEl.textContent = winnings + "$";
+
+        let winnings = {
+            Winnings: 3 * playerObj.TotalBet,
+            Condition: playerObj.Name + " Player won",
+        };
+
+        winningsArray.push(winnings);
     }
 
     if (dealer.Score === playerObj.Score) {
-        messageEl.textContent = "Game is a Draw";
-        player.Credit += playerObj.TotalBet;
+        // messageEl.textContent = "Game is a Draw";
+        // player.Credit += playerObj.TotalBet;
+        // gameOverEl.style.display = "block";
+        // winnings = playerObj.TotalBet;
+        // winningsEl.textContent = winnings + "$";
+
+        let winnings = {
+            Winnings: playerObj.TotalBet,
+            Condition: playerObj.Name + " Game was a draw",
+        };
+
+        winningsArray.push(winnings);
     }
+}
+
+function getWinnings() {
+    let winnings = 0;
+    winningsArray.forEach((element) => {
+        winnings += element.Winnings;
+        console.log(element.Winnings);
+    });
+    console.log(winnings);
+    return winnings;
 }
 
 /*======================================================
@@ -782,6 +872,7 @@ function makeBet() {
 }
 
 function startGame() {
+    winningsArray.length = 0;
     deleteCards();
     if (splitExists) {
         deleteSplits();
@@ -808,7 +899,7 @@ function startGame() {
     messageEl.style.textAlign = "start";
     messageEl.style.width = "9ch";
 
-    renderChips(5);
+    renderChips(1);
     renderChips(10);
     renderChips(25);
     renderChips(100);
